@@ -24,24 +24,9 @@ public class CertificateFileNameValidator implements Validator {
     static ResourceBundle properties = ResourceBundle.getBundle("ttc",locale);//NON-NLS
 
     public static void validateCertificateAgainstFilename(X509Certificate cert, String filename) throws CertificateInconsistentToFilenameException {
-        X500Name certSubject;
-        try {
-            certSubject = new JcaX509CertificateHolder(cert).getSubject();
-        } catch (CertificateEncodingException e) {
-            throw new CertificateInconsistentToFilenameException(String.format(properties.getString("de.konfidas.ttc.validation.consistencyErrorForCert"), filename),e);
-        }
+        final String keyHashFromFilename = filename.split("_")[0].toUpperCase();
 
-        RDN cn = certSubject.getRDNs(BCStyle.CN)[0];
-
-        String certSubjectClean = IETFUtils.valueToString(cn.getFirst().getValue()).toUpperCase();
-
-        String keyHashFromFilename = filename.split("_")[0].toUpperCase();
-
-        if (!(certSubjectClean.equals(keyHashFromFilename))){
-            throw new CertificateInconsistentToFilenameException.FilenameToSubjectMismatchException(certSubjectClean, keyHashFromFilename);
-        }
-
-        MessageDigest digest;
+        final MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
